@@ -1,7 +1,6 @@
 <?php
 
 namespace frontend\controllers;
-use frontend\data\UserContext;
 use hzfw\web\Controller;
 
 class OkexController extends Controller
@@ -32,7 +31,7 @@ class OkexController extends Controller
           $result = $this->db->Execute($sql);
         }
         sleep(1);
-      }while(true);
+      }while(false);
 
     }
 

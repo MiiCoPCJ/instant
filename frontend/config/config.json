@@ -38,6 +38,11 @@
 				"Name": "OkexData",
 				"Template": "okex/data",
 				"Defaults": {"Controller": "Okex", "Action": "Data"}
+			},
+      {
+				"Name": "Compare",
+				"Template": "notice/compare",
+				"Defaults": {"Controller": "Notice", "Action": "Compare"}
 			}
 		]
 	}
