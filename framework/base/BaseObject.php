@@ -12,4 +12,5 @@ class BaseObject
     {
         return get_called_class();
     }
+
 }

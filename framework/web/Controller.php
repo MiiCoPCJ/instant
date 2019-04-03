@@ -3,34 +3,49 @@
 namespace hzfw\web;
 use hzfw\base\BaseObject;
 use hzfw\base\FileStream;
+use hzfw\web\Common;
 use hzfw;
 
 class Controller extends BaseObject
 {
+    protected $db;
+    protected $func;
+    protected $redis;
+    protected $okexURL;
+
+    public function __construct(Config $config, \DefaultDb $db)
+    {
+        $this->db = $db;
+        $this->func = new Common();
+        $this->redis = new \Redis();
+        $this->redis->connect('127.0.0.1', 6379);
+        $this->okexURL = $config->okex->url;
+    }
+
     /**
      * 控制器名称
      * @var string
      */
     public $controller = null;
-    
+
     /**
      * 动作名称
      * @var string
      */
     public $action = null;
-    
+
     /**
      * 上下文
      * @var HttpContext
      */
     public $httpContext = null;
-    
+
     /**
      * 路由
      * @var Route
      */
     public $route = null;
-    
+
     /**
      * 视图
      * @param string $viewName 视图名称或路径
@@ -43,7 +58,7 @@ class Controller extends BaseObject
         $httpContext->response->SetContentType('text/html');
         $httpContext->response->SetContent($view->View($viewName, $model));
     }
-    
+
     /**
      * 视图
      * @param string $viewName 视图名称或路径
@@ -56,7 +71,7 @@ class Controller extends BaseObject
         $httpContext->response->SetContentType('text/html');
         $httpContext->response->SetContent($view->ViewPartial($viewName, $model));
     }
-    
+
     /**
      * 返回JSON
      * @param mixed $content 内容
@@ -68,7 +83,7 @@ class Controller extends BaseObject
         $httpContext->response->SetContent(json_encode($content, $options));
         $httpContext->response->SetContentType('application/json');
     }
-    
+
     /**
      * 返回文件
      * @param string $content 内容
@@ -80,14 +95,14 @@ class Controller extends BaseObject
     {
         $httpContext = $this->httpContext;
         $response = $httpContext->response;
-        
+
         if (null === $contentType) {
             $contentType = 'application/octet-stream';
         }
-        
+
         $response->SetContent($content);
         $response->SetContentType($contentType);
-        
+
         if(null !== $rangeBegin && null !== $rangeEnd)
         {
             if (null !== $rangeBegin && null === $rangeEnd) {
@@ -96,11 +111,11 @@ class Controller extends BaseObject
             else if (null === $rangeBegin && null !== $rangeEnd) {
                 $rangeBegin = 0;
             }
-            
+
             $response->SetContentRange([$rangeBegin, $rangeEnd]);
         }
     }
-    
+
     /**
      * 返回文件
      * @param string $fileName 文件名
@@ -113,14 +128,14 @@ class Controller extends BaseObject
         $httpContext = $this->httpContext;
         $response = $httpContext->response;
         $stream = new FileStream($fileName, 'rb');
-        
+
         if (null === $contentType) {
             $contentType = 'application/octet-stream';
         }
-        
+
         $response->SetContentStream($stream);
         $response->SetContentType($contentType);
-        
+
         if(null !== $rangeBegin && null !== $rangeEnd)
         {
             if (null !== $rangeBegin && null === $rangeEnd) {
@@ -129,11 +144,11 @@ class Controller extends BaseObject
             else if (null === $rangeBegin && null !== $rangeEnd) {
                 $rangeBegin = 0;
             }
-            
+
             $response->SetContentRange([$rangeBegin, $rangeEnd]);
         }
     }
-    
+
     /**
      * 重定向
      * @param string $url
@@ -143,7 +158,7 @@ class Controller extends BaseObject
     {
         $this->httpContext->response->Redirect($url, $statusCode);
     }
-    
+
     /**
      * 重定向
      * @param string $routeName
@@ -155,7 +170,7 @@ class Controller extends BaseObject
         $url = $this->route->CreateAbsoluteUrl($routeName, $params);
         $this->httpContext->response->Redirect($url, $statusCode);
     }
-    
+
     /**
      * StatusCode 200
      */
@@ -163,7 +178,7 @@ class Controller extends BaseObject
     {
         $this->httpContext->response->SetStatusCode(200);
     }
-    
+
     /**
      * StatusCode 400
      */
@@ -171,7 +186,7 @@ class Controller extends BaseObject
     {
         $this->httpContext->response->SetStatusCode(400);
     }
-    
+
     /**
      * StatusCode 404
      */
@@ -179,7 +194,7 @@ class Controller extends BaseObject
     {
         $this->httpContext->response->SetStatusCode(404);
     }
-    
+
     /**
      * StatusCode 500
      */

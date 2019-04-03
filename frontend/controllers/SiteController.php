@@ -20,7 +20,7 @@ class SiteController extends Controller
         //$data = $userContext->GetUser(1);
         return $this->View();
     }
-    
+
     //测试1
     public function Test1(string $name)
     {
@@ -39,5 +39,11 @@ class SiteController extends Controller
     {
         $url = $this->route->CreateUrl('Default', ['Controller' => 'Site', 'Action' => 'TestTest3']);
         return $this->View('', $url);
+    }
+
+
+    public function Test4()
+    {
+      var_dump(1);
     }
 }

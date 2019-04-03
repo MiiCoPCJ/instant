@@ -1,4 +1,7 @@
 {
+    "okex": {
+        "url": "https://www.okex.me"
+    },
     "DefaultDb": {
         "Dsn": "mysql:host=127.0.0.1;port=3306;dbname=instant",
         "UserName": "root",
@@ -35,14 +38,19 @@
 				"Defaults": {}
 			},
       {
-				"Name": "OkexData",
-				"Template": "okex/data",
-				"Defaults": {"Controller": "Okex", "Action": "Data"}
+				"Name": "EOS",
+				"Template": "eos/data",
+				"Defaults": {"Controller": "EOS", "Action": "Data"}
 			},
       {
-				"Name": "Compare",
-				"Template": "notice/compare",
-				"Defaults": {"Controller": "Notice", "Action": "Compare"}
+				"Name": "CompareEOS",
+				"Template": "CompareEOS/compare",
+				"Defaults": {"Controller": "CompareEOS", "Action": "Compare"}
+			},
+      {
+				"Name": "BuyEOS",
+				"Template": "BuyEOS/buy",
+				"Defaults": {"Controller": "BuyEOS", "Action": "Buy"}
 			}
 		]
 	}
