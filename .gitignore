@@ -1,2 +1,6 @@
+/frontend/config.json
 .idea
 .git
+.project
+/web/.buildpath
+/web/.project
