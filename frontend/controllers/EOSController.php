@@ -9,11 +9,11 @@ class EOSController extends Controller
     //获取okex的Api数据
     public function Data()
     {
+      set_time_limit(0);
       do{
         $url = $this->okexURL.'/api/v1/ticker.do?symbol=eos_usdt';
         $data = $this->func->request_get($url);
         $data = json_decode($data,true);
-
         //判断获取是否错误
         if(!array_key_exists('error_code',$data)){
           $time = $data['date'];

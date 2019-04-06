@@ -10,6 +10,7 @@ class CompareEOSController extends Controller
     {
         //$sql = 'select max(`time`) as `time`,`price` from `eos`';
         //$last = $this->db->QueryOne($sql);
+        set_time_limit(0);
         do{
             $last = json_decode($this->redis->lPop('eos'),true);
 
