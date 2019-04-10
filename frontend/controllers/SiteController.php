@@ -18,6 +18,7 @@ class SiteController extends Controller
         //throw new \hzfw\web\HttpException(404);
         //$userContext = hzfw::GetService(UserContext::ClassName());
         //$data = $userContext->GetUser(1);
+        $this->func->log_file('index');
         return $this->View();
     }
 
