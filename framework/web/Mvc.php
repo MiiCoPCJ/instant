@@ -11,25 +11,25 @@ class Mvc extends BaseObject
      * @var Config
      */
     private $config = null;
-    
+
     /**
      * HTTP上下文
      * @var HttpContext
      */
     private $httpContext = null;
-    
+
     /**
      * 路由
      * @var Route
      */
     private $route = null;
-    
+
     /**
      * 过滤器
      * @var array
      */
     private $filter = [];
-    
+
     /**
      * 初始化
      * {
@@ -48,19 +48,20 @@ class Mvc extends BaseObject
         $this->config = $config;
         $this->httpContext = $httpContext;
         $this->route = $route;
-        
-        set_error_handler(function (int $errno, string $errstr, 
+
+        set_error_handler(function (int $errno, string $errstr,
             string $errfile, int $errline, array $errcontext) :bool {
             return true;
         }, E_ALL);
-        
+
         set_exception_handler(function (\Throwable $ex): void {
             header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true);
-            echo 'error occurred';
+            //echo 'error occurred';
+            echo $ex;
             exit();
         });
     }
-    
+
     /**
      * Mvc初始化
      * @return self
@@ -75,7 +76,7 @@ class Mvc extends BaseObject
         $obj = hzfw::GetService(Mvc::ClassName());
         return $obj;
     }
-    
+
     /**
      * 添加过滤器
      * @param string $class
@@ -84,7 +85,7 @@ class Mvc extends BaseObject
     {
         $this->filter[] = [$class, null];
     }
-    
+
     /**
      * 运行
      */
@@ -93,14 +94,14 @@ class Mvc extends BaseObject
         $stop = false;
         $route = $this->route;
         $response = $this->httpContext->response;
-        
+
         try
         {
             //路由匹配失败，抛出404
             if ('' === $route->GetControllerName() || '' === $route->GetActionName()) {
                 throw new HttpException(404, 'route matching failed');
             }
-            
+
             //过滤器
             foreach ($this->filter as $v)
             {
@@ -116,7 +117,7 @@ class Mvc extends BaseObject
                     }
                 }
             }
-            
+
             if (false === $stop)
             {
                 try
@@ -139,7 +140,7 @@ class Mvc extends BaseObject
                 catch (\Throwable $e) {
                     throw $e;
                 }
-                
+
                 //过滤器
                 foreach ($this->filter as $v)
                 {
@@ -161,32 +162,32 @@ class Mvc extends BaseObject
                     ob_clean();
                 }
             }
-            
+
             $response->ClearHeader();
             $response->ClearCookie();
             $response->SetContent('');
-            
+
             if (null !== ($stream = $response->GetContentStream())) {
                 $response->SetContentStream(null);
                 unset($stream);
             }
-            
+
             $response->SetStatusCode(500);
             if($e instanceof HttpException) {
                 $response->SetStatusCode($e->getCode());
             }
-            
+
             $r = explode('/', $this->config->Mvc->Error);
             $this->CallAction($this->config->Mvc->ControllerNamespace, $r[0], $r[1], ['e' => $e]);
         }
-        
+
         //发送头
         $this->SendHeader();
-        
+
         //发送内容
         $this->SendContent();
     }
-    
+
     /**
      * 发送头
      */
@@ -194,13 +195,13 @@ class Mvc extends BaseObject
     {
         //响应信息
         $response = $this->httpContext->response;
-        
+
         //设置状态码
         $version = $response->GetVersion();
         $statusCode = $response->GetStatusCode();
         $statusText = $response->GetStatusText();
         header("{$version} {$statusCode} {$statusText}", true);
-        
+
         //HEADER设置
         foreach ($response->GetHeaderAll() as $k => $v)
         {
@@ -215,14 +216,14 @@ class Mvc extends BaseObject
                 header("{$k}: {$v}", true);
             }
         }
-        
+
         //COOKIE设置
         foreach ($response->GetCookieAll() as $v)
         {
             setcookie($v->name, $v->value, $v->expires, $v->path, $v->domain, $v->secure, $v->httpOnly);
         }
     }
-    
+
     /**
      * 发送内容
      */
@@ -230,7 +231,7 @@ class Mvc extends BaseObject
     {
         //响应信息
         $response = $this->httpContext->response;
-        
+
         //设置输出类型
         $contentType = $response->GetContentType();
         if (preg_match('/^text\/.*/', $contentType))
@@ -244,7 +245,7 @@ class Mvc extends BaseObject
             //其他
             header("Content-Type: {$contentType}", true);
         }
-        
+
         //输出内容
         $contentRange = $response->GetContentRange();
         if (null === $contentRange)
@@ -260,14 +261,14 @@ class Mvc extends BaseObject
             {
                 set_time_limit(0);
                 $size = 1024 * 1204 * 8;
-                
+
                 while (!$stream->IsEof())
                 {
                     //输出内容并强制刷新
                     echo $stream->Read($size);
                     flush();
                 }
-                
+
                 unset($stream);
             }
         }
@@ -279,7 +280,7 @@ class Mvc extends BaseObject
             $statusCode = $response->GetStatusCode();
             $statusText = $response->GetStatusText();
             header("{$version} {$statusCode} {$statusText}", true);
-            
+
             list($begin, $end) = $contentRange;
             $stream = $response->GetContentStream();
             if (null === $stream)
@@ -287,7 +288,7 @@ class Mvc extends BaseObject
                 //完整内容
                 $content = $response->GetContent();
                 $contentLength = strlen($content);
-                
+
                 //截取数据并返回
                 header("Content-Range: bytes {$begin}-{$end}/{$contentLength}", true);
                 $content = substr($content, $begin, $end - $begin + 1);
@@ -297,13 +298,13 @@ class Mvc extends BaseObject
             {
                 set_time_limit(0);
                 $size = 1024 * 1204 * 8;
-                
+
                 $contentLength = $stream->Size();
                 header("Content-Range: bytes {$begin}-{$end}/{$contentLength}", true);
-                
+
                 //设置开始位置
                 $stream->Seek($begin, SEEK_SET);
-                
+
                 //判断文件尾和指定范围
                 while (!$stream->IsEof() && ($pos = $stream->Tell()) <= $end)
                 {
@@ -311,17 +312,17 @@ class Mvc extends BaseObject
                     if ($pos + $size > $end) {
                         $size = $end - $pos + 1;
                     }
-                    
+
                     //输出内容并强制刷新
                     echo $stream->Read($size);
                     flush();
                 }
-                
+
                 unset($stream);
             }
         }
     }
-    
+
     /**
      * 调用动作
      * @param string $namespace
@@ -336,42 +337,42 @@ class Mvc extends BaseObject
     {
         $method = $action;
         $class = "\\{$namespace}\\{$controller}Controller";
-        
+
         $obj = hzfw::NewService($class);
         $reflection = new \ReflectionClass($obj);
-        
+
         if (!$reflection->hasMethod($method))
         {
             //方法不存在
             throw new \UnknownMethodException("class '{$class}' method '{$method}' not exist");
         }
-        
+
         $obj->action = null === $obj->action ? $action : $obj->action;
         $obj->controller = null === $obj->controller ? $controller : $obj->controller;
         $obj->httpContext = null === $obj->httpContext ? $this->httpContext : $obj->httpContext;
         $obj->route = null === $obj->route ? $this->route : $obj->route;
-        
+
         $params = [];
         $routes = $this->route->GetRouteAll();
         $querys = $this->httpContext->request->GetQueryAll();
-        
+
         $reflectionMethod = $reflection->getMethod($method);
         if (!$reflectionMethod->isPublic())
         {
             //方法不是公开的
             throw new \UnknownMethodException("class '{$class}' method '{$method}' not public");
         }
-        
+
         $reflectionParameters = $reflectionMethod->getParameters();
         foreach ($reflectionParameters as $reflectionParameter)
         {
             //获取参数名称和类型
             $parameterName = $reflectionParameter->getName();
             $parameterType = (string)$reflectionParameter->getType();
-            
+
             //获取参数值
             $value = isset($pars[$parameterName]) ? $pars[$parameterName] : null;
-            
+
             //从路由和GET参数填充
             if (null === $value) $value = isset($routes[$parameterName]) ? $routes[$parameterName] : null;
             if (null === $value) $value = isset($querys[$parameterName]) ? $querys[$parameterName] : null;
@@ -449,10 +450,10 @@ class Mvc extends BaseObject
                 throw new \UnknownParameterException("class '{$class}' parameter '{$parameterName}' not exist");
             }
         }
-        
+
         return call_user_func_array([$obj, $method], $params);
     }
-    
+
     /**
      * 和 instanceof 类似
      * @param string $className1
@@ -465,7 +466,7 @@ class Mvc extends BaseObject
         {
             $result = false;
             $reflection = new \ReflectionClass($className1);
-            
+
             while(true)
             {
                 $name = $reflection->getName();
@@ -474,11 +475,11 @@ class Mvc extends BaseObject
                     $result = true;
                     break;
                 }
-                
+
                 $reflection = $reflection->getParentClass();
                 if (false === $reflection) break;
-            } 
-            
+            }
+
             return $result;
         }
         catch (\Exception $e) {
