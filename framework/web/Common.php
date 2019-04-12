@@ -37,14 +37,14 @@ class Common extends BaseObject
         return $data;
     }
 
-    public function log_file($str,$seaslog=true,$fileName='', $append=true):void
+    public function log_file($str,$seaslog=true,$fileName=false, $append=true):void
     {
       if($seaslog){
           $this->seaslog($str);
       }else{
         $path = __DIR__.'/../logs/';
         $file = $path.'logs.log';
-        if(!fileName){
+        if($fileName){
           $file = $path.$fileName;
         }
 
