@@ -2,8 +2,7 @@
 <script type="text/javascript" src="/js/echarts.min.js"></script>
 <link rel="stylesheet" type="text/css" href="/css/style.css">
 
-<div>
-	<div>okex</div>
+<div class="wrap">
 	<div id="container" style="height: 100%"></div>
 </div>
 
@@ -18,14 +17,14 @@ var downColor = '#00da3c';
 var downBorderColor = '#008F28';
 
 var dataCount = 5;
-var data = <?php echo  ?>;
+var data = <?php echo $model['okex'] ?>;
 
 var option = {
     dataset: {
         source: data
     },
     title: {
-        text: 'Data Amount: ' + echarts.format.addCommas(dataCount)
+        text: 'Okex Data'
     },
     tooltip: {
         trigger: 'axis',
@@ -58,7 +57,7 @@ var option = {
             type: 'category',
             scale: true,
             boundaryGap : false,
-            // inverse: true,
+            inverse: true,
             axisLine: {onZero: false},
             splitLine: {show: false},
             splitNumber: 20,

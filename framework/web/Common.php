@@ -73,4 +73,36 @@ class Common extends BaseObject
         $url = 'https://www.wafeng.com/func/sms?telephone=15219127449&str=1'.mt_rand(10000, 99999);
         $result = $this->request_get($url);
     }
+
+
+    public function splitData(int $granularity,int $start, int $end): Array
+    {
+      $func = new Common();
+
+      $start = date('Y-m-d\TH:i:s\Z', $start - date('Z'));
+      $end = date('Y-m-d\TH:i:s\Z', $end - date('Z'));
+
+      $url = "https://www.okex.me/api/spot/v3/instruments/BTC-USDT/candles?granularity=$granularity&start=$start&end=$end";
+      $api = $func->request_get($url);
+      $api = json_decode($api,true);
+
+      $okex = array();
+      foreach($api as $key=>$value){
+        $time = date('Y-m-d H:i:s',strtotime($value[0]));
+        $open = (float)$value[1];
+        $high = (float)$value[2];
+        $low = (float)$value[3];
+        $close = (float)$value[4];
+        $volume = (string)$value[5];
+
+        $p = -1;
+        if($open<$close){
+          $p = 1;
+        }
+
+        $okex[] = [$time,$open,$high,$low,$close,$volume,$p];
+      }
+      
+      return $okex;
+    }
 }
