@@ -40,7 +40,7 @@ class OkexController extends Controller
 
           $okex[] = [$time,$open,$high,$low,$close,$volume,$p];
         }
-        
+
         $arr['okex'] = [];
         if(!empty($okex)){
           $arr['okex'] = json_encode($okex);
@@ -90,6 +90,8 @@ class OkexController extends Controller
 
 
 
-
+    public function Websocket(){
+      return $this->View('websocket');
+    }
 
 }
